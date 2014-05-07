@@ -1,3 +1,5 @@
+This project has been moved to and maintained at https://github.com/waartaa/waartaa.
+
 waartaa
 =======
 
