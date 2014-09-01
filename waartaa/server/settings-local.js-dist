@@ -1,0 +1,34 @@
+user_profiles = {
+  /*
+  username1: {
+    connections: [
+      {
+        name: "Freenode",
+        servers: ['irc.freenode.net'],
+        password: null,
+        nicks: ['nick', 'nick_', 'nick__'],
+        channels: ['#channel1', '#channel2'],
+      }
+    ]
+  }
+  */
+}
+
+GlobalServers = {
+  'Freenode': {
+    connections: [
+      {url: 'irc.freenode.net', port: '6667'},
+      {url: 'irc.freenode.net', port: '8000'}
+    ]
+  }
+}
+
+CONFIG = {
+  'channel_who_poll_interval': 20 * 1000,
+  'show_last_n_logs': 20
+}
+
+
+SUPER_USER = 'foo'
+
+SECRET_KEY = 'blah'

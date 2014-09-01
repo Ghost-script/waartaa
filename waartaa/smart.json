@@ -1,0 +1,12 @@
+{
+  "packages": {
+    "jquery-ui-bootstrap": {},
+    "router": {},
+    "observatory": {},
+    "irc": {},
+    "handlebar-helpers": {},
+    "require": {},
+    "presence": {},
+    "bootstrap-3": {}
+  }
+}

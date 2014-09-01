@@ -7,7 +7,7 @@ reloadUserProfiles = function (users) {
   }
   for (var i=0; i < users.length; i++) {
     var user = users[i];
-    var user_profile = user_profiles[user.username];
+    var user_profile = user_profiles[user.username] || {};
     var connections = {};
     var profile = user.profile;
     for (i in user_profile.connections) {
@@ -231,7 +231,7 @@ initializeClients = function() {
   }
 }
 
-Meteor.startup(function () {
+/*Meteor.startup(function () {
   if (Servers.find().count() === 0) {
     var connections = [
       {
@@ -258,4 +258,32 @@ Meteor.startup(function () {
     }
   }
   Fiber(initializeClients).run();
+});*/
+
+function initializeServers () {
+  var user = Meteor.users.findOne({username: SUPER_USER});
+  if (! user)
+    return;
+  for (server_name in GlobalServers) {
+    var server = Servers.findOne({name: server_name});
+    if (! server) {
+      var now = new Date();
+      var server_data = GlobalServers[server_name];
+      var server_id = Servers.insert({
+        name: server_name,
+        connections: server_data.connections,
+        created: now,
+        creator: user.username,
+        creator_id: user._id,
+        last_updated: now,
+        last_updater: user.username,
+        last_updater_id: user._id,
+      });
+      console.log("Server: " + server_id + " created");
+    }
+  }
+}
+
+Meteor.startup(function () {
+  initializeServers();
 });

@@ -1,0 +1,285 @@
+<template name="chat">
+<div id="chat" class="row" style="min-height: 0px;">
+  {{> chat_connections}}
+  {{> chat_main}}
+  {{> chat_users}}
+</div>
+{{> chat_input}}
+</template>
+
+<template name="chat_connections">
+  <div id="chat-servers" class="bs-sidebar col-md-2 hidden-xs hidden-sm col-sm-1" style="overflow: auto;">
+    <div class="panel panel-info">
+      <div class="panel-heading">
+        <strong>Servers</strong>
+        <span class="pull-right">
+          <button id="server-add-btn" class="btn btn-primary compact-icon-btn enable-tipsy" title="Add new server">
+            <icon class="glypicon glyphicon-plus"></icon>
+          </button>
+        </span>
+      </div>
+      <div class="panel-body">
+        <ul class="nav bs-sidenav">
+          {{#each servers}}
+            {{> chat_connection_server}}
+          {{/each}}
+        </ul>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template name="chat_connection_server">
+  <li id='server-{{ _id }}' class='server' data-server-id='{{ _id }}'>
+    <a id='serverLink-{{ _id }}' class='server-link' data-server-id='{{ _id }}' data-roomtype="server" href="#">
+      {{name}}
+      <span class="pull-right">
+        <div class="btn-group">
+          <button type="button" class="server-room-menu-btn btn btn-default dropdown-toggle" data-toggle="dropdown">
+            <span class="caret"></span>
+          </button>
+          {{> server_menu}}
+        </div>
+      </span>
+    </a>
+    {{> server_channels}}
+    {{> server_pms}}
+  </li>
+</template>
+
+<template name="server_menu">
+  <ul class="dropdown-menu pull-right" role="menu" aria-labelledby="server-menu-{{ _id }}" style="min-width: 85px; width: 85px;">
+    <li>
+      <a href="#" style="padding: 3px 5px;" data-server-id="{{ _id }}"><i class="glyphicon glyphicon-plus"></i> Channel</a>
+      <a href="#" style="padding: 3px 5px;" data-server-id="{{ _id }}"><i class="glyphicon glyphicon-pencil"></i> Edit</a>
+      <a href="#" style="padding: 3px 5px;" data-server-id="{{ _id }}"><i class="glyphicon glyphicon-remove"></i> Close</a>
+    </li>
+  </ul>
+</template>
+
+<template name="server_pms">
+  <ul class="nav bs-siderbar">
+    {{#each pms _id}}
+      {{> server_pm_item}}
+    {{/each}}
+  </ul>
+</template>
+
+<template name="server_pm_item">
+  <li class="dropdown">
+    <a id="pmLink-{{ server_id }}_{{ name }}" role="button" class="server-room pm" href="#" data-roomtype="pm" data-roomid="{{ server_id}}_{{ name }}" data-nick="{{ name }}" data-server-id="{{ server_id }}">
+      <i class="icon-user"></i>
+      {{ name }}
+      <span class="pull-right">        
+        <span class="badge">{{ unread_logs_count "pm" server_id name }}</span>
+        <div class="btn-group">
+          <button type="button" class="server-room-menu-btn btn btn-default dropdown-toggle" data-toggle="dropdown">
+            <span class="caret"></span>
+          </button>
+          {{> server_pm_menu}}
+        </div>
+      </span>
+    </a>
+  </li>
+</template>
+
+<template name="server_pm_menu">
+  <ul class="dropdown-menu pull-right" role="menu" aria-labelledby="{{ name }}" style="min-width: 80px; width: 80px;">
+    <li>
+      <a class="pm-remove" href="#" style="padding: 3px 5px;" data-user-nick="{{ name }}" data-server-id="{{ server_id }}"><i class="glyphicon glyphicon-remove"></i> Close</a>
+    </li>
+  </ul>
+</template>
+
+<template name="server_channels">
+  <ul class="nav bs-sidebar">
+    {{#each channels _id}}
+      {{> server_channel_item}}
+    {{/each}}
+  </ul>
+</template>
+
+<template name="server_channel_item">
+  <li class="">
+    <a id="channelLink-{{ _id }}" role="button" class="server-room channel" href="#" data-id="{{ _id }}" data-roomtype="channel">
+      {{ name }}
+      <span class="pull-right">
+        <span class="badge">{{ unread_logs_count "channel" _id }}</span>
+        <div class="btn-group">
+          <button type="button" class="server-room-menu-btn btn btn-default dropdown-toggle" data-toggle="dropdown">
+            <span class="caret"></span>
+          </button>
+          {{> channel_menu}}
+        </div>
+      </span>
+    </a>
+  </li>
+</template>
+
+<template name="unread_messages_count">
+</template>
+
+<template name="channel_menu">
+  <ul class="dropdown-menu pull-right" role="menu" style="min-width: 80px; width: 80px;">
+    <li>
+      <a href="#" class="channel-remove" style="padding: 3px 5px;" data-channel-id="{{ _id }}"><i class="glyphicon glyphicon-remove"></i> Close</a>
+      <a href="#" style="padding: 3px 5px;" data-channel-id="{{ _id }}"><i class="glyphicon glyphicon-pencil"></i> Edit</a>
+    </li>
+  </ul>
+</template>
+
+<template name="chat_main">
+<div id="chat-main" class="col-md-8 col-sm-9 col-xs-12">
+  {{> channel_logs}}
+  {{> server_logs}}
+  {{> pm_logs}}
+</div>
+</template>
+
+<template name="channel_logs">
+{{#each activeChannels }}
+<div id="channel-chatroom-{{ _id }}" class="chatroom channel" style="display: none;">
+  <div class="topic">
+    <ul class="nav nav-tabs nav-stacked" {{# unless topic }}style="display:none;"{{/unless}}>
+      <li><p>{{topic}}<p></li>
+    </ul>
+  </div>
+  <div class="chat-logs-container channel" data-channel-id="{{ _id }}" style="overflow-y: auto; overflow-x: hidden;">
+    {{> channel_chat_logs_table}}
+  </div>
+</div>
+{{/each}}
+</template>
+
+<template name="channel_chat_logs_table">
+<table id="channel-chat-logs-{{ _id }}" class="table chatlogs-table channel">
+  {{#each channelChatLogs _id}}
+    {{> chat_row}}
+  {{/each}}
+</table>
+</template>
+
+<template name="server_logs">
+{{#each activeServers }}
+<div id="server-chatroom-{{ _id }}" class="chatroom server" style="display: none;">
+  <div class="topic">
+    <ul class="nav nav-tabs nav-stacked" {{# unless topic }}style="display:none;"{{/unless}}>
+      <li><p>{{topic}}<p></li>
+    </ul>
+  </div>
+  <div class="chat-logs-container server" data-server-id="{{ _id }}" style="overflow-y: auto; overflow-x: hidden;">
+    {{> server_chat_logs_table}}
+  </div>
+</div>
+{{/each}}
+</template>
+
+<template name="server_chat_logs_table">
+  <table id="server-chat-logs-{{ _id }}" class="table chatlogs-table server">
+    {{#each serverChatLogs _id}}
+      {{> chat_row}}
+    {{/each}}
+  </table>
+</template>
+
+<template name="pm_logs">
+{{#each activeServers }}
+  {{# each pms _id}}
+    <div id="pmChatroom-{{ room_id }}" class="chatroom pm" style="display: none;">
+      <div class="topic">
+        <ul class="nav nav-tabs nav-stacked" {{# unless topic }}style="display:none;"{{/unless}}>
+          <li><p>{{topic}}<p></li>
+        </ul>
+      </div>
+      <div class="chat-logs-container pm" data-server-id="{{ server_id }}" data-nick="{{ name }}" style="overflow-y: auto; overflow-x: hidden;">
+        {{> pm_chat_logs_table}}
+      </div>
+    </div>
+  {{/each}}
+{{/each}}
+</template>
+
+<template name="pm_chat_logs_table">
+  <table id="pm-chat-logs-{{ server_id }}_{{ name }}" class="table chatlogs-table pm">
+    {{#each pmChatLogs server_id name }}
+      {{> chat_row}}
+    {{/each}}
+  </table>
+</template>
+
+<template name="chat_row">
+  <tr>
+    <td class="span2"><strong>{{from}}</strong></td>
+    <td>
+      <div class="row">
+        {{message}}
+      </div>
+      <div class="row">
+        <em class="pull-right chat-message-datetime">{{last_updated}}</em>
+      </div>
+    </td>
+  </tr>
+</template>
+
+<template name="chat_input">
+<div class="navbar navbar-default navbar-fixed-bottom" role="navigation" style="height: 40px;">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-2">&nbsp;</div>
+      <div class="col-md-8">
+        <form id="chat-input-form">
+          <input id="chat-input" class="form-control" name="chat_input" type="text"
+            style="margin-top: 5px;" autocomplete="off" placeholder="@">
+        </form>
+      </div>
+      <div class="col-md-2">&nbsp;</div>
+    </div>
+  </div>
+</div>
+</template>
+
+<template name="chat_users">
+<div id="chat-channel-users" class="col-md-2 col-sm-2 hidden-xs">
+  <div class="panel panel-info">
+    <div class="panel-heading">
+      <strong>Users</strong>
+    </div>
+    <div class="panel-body">
+      <ul class="nav nav-list">
+        {{#each channel_users}}
+          {{>chat_user}}
+        {{/each}}
+      </ul>
+    </div>
+</div>
+</template>
+
+<template name="chat_user">
+  <li class="dropdown{{#if is_user_away name}} user-away{{/if}}">
+    <a id="{{ name }}" class="channel-user" href="#">
+      {{>channel_user_icon}} {{name}}
+      <span class="pull-right">
+        <div class="btn-group">
+          <button type="button" class="channel-user-menu-btn btn btn-default dropdown-toggle" data-toggle="dropdown">
+            <span class="caret"></span>
+          </button>
+          {{> user_menu}}
+        </div>
+      </span>
+    </a>
+  </li>
+</template>
+
+<template name="channel_user_icon">
+  <i class="glyphicon glyphicon-user whois-tooltip{{#if is_user_away name}} icon-white{{/if}}" title="{{whois_tooltip name}}"></i>
+</template>
+
+<template name="user_menu">
+  <ul class="dropdown-menu pull-right" role="menu" aria-labelledby="{{ name }}" style="min-width: 80px; width: 80px;">
+    <li>
+      <a class="pm-user" href="#" style="padding: 3px 5px;" data-user-nick="{{ name }}"><i class="glyphicon glyphicon-envelope"></i> PM</a>
+      <a class="whois-user" href="#" style="padding: 3px 5px;" data-user-nick="{{ name }}"><i class="glyphicon glyphicon-info-sign"></i> WHOIS</a>
+    </li>
+  </ul>
+</template>
+
